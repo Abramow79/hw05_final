@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+  <main role="main" class="container">
+    <div class="row">
+      <div class="col-md-3 mb-3 mt-1">
+        <div class="card">
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                <div class="h3">Об авторе</div>
+              </li>
+              <li class="list-group-item">
+                <div class="h6 text-muted">
+                  <img src="{% static 'img/Me.png' %}"
+                       alt="My image"
+                       style="display: block;
+                              width: 100%;
+                              height: auto;
+                              margin: auto;">
+                  <p>
+                    Андрей Абрамов
+                  </p>
+                  <p>
+                    GitHub:
+                  </p>
+                  <a href="https://github.com/Abramow79">https://github.com/Abramow79</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      {% with card_text='Тут будет текст обо мне, не очень пока способном программисте.<br>Учиться, учиться и еще раз учиться, как завещал великий Ленин!.))' %}
+      <div class="col-md-9">
+        <div class="card-body">
+          <div class="card-text">
+            <p>{{ card_text }}</p>
+          </div>
+        </div>
+      </div>
+      {% endwith %}
+    </div>
+  </main>
+{% endblock %}
