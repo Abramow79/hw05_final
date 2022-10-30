@@ -5,7 +5,7 @@ from django.views.decorators.cache import cache_page
 
 
 from .forms import CommentForm, PostForm
-from .models import Comment, Follow, Group, Post, User
+from .models import Follow, Group, Post, User
 
 
 LENGTH = 10
@@ -43,13 +43,13 @@ def post_detail(request, post_id):
     form = CommentForm(request.POST or None)
     related = Post.objects.select_related('author', 'group')
     post = get_object_or_404(related, pk=post_id)
-    comments = Comment.objects.filter(post=post)
+    comments = post.comments.all()
     post_count = post.author.posts.count()
     context = {
         'post': post,
-        "post_count": post_count,
-        "form": form,
-        "comments": comments,
+        'post_count': post_count,
+        'form': form,
+        'comments': comments,
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -89,7 +89,6 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
-    # Получите пост
     form = CommentForm(request.POST or None)
     post = get_object_or_404(Post, id=post_id)
     if form.is_valid():
@@ -102,26 +101,23 @@ def add_comment(request, post_id):
 
 @login_required
 def follow_index(request):
-    # информация о текущем пользователе доступна в переменной request.user
     posts = Post.objects.filter(author__following__user=request.user)
     context = {
-        "page_obj": get_page_context(posts, request),
+        'page_obj': get_page_context(posts, request),
     }
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
 def profile_follow(request, username):
-    # Подписаться на автора
     author = get_object_or_404(User, username=username)
     if request.user != author:
         Follow.objects.get_or_create(user=request.user, author=author)
-    return redirect("posts:follow_index")
+    return redirect('posts:follow_index')
 
 
 @login_required
 def profile_unfollow(request, username):
-    # Дизлайк, отписка
     author = get_object_or_404(User, username=username)
     Follow.objects.filter(user=request.user, author=author).delete()
-    return redirect("posts:follow_index")
+    return redirect('posts:follow_index')

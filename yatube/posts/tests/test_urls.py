@@ -37,9 +37,9 @@ class PostURLTests(TestCase):
 
     def test_unexisting_page(self):
         """Проверка кастомного шаблона и доступа к несуществующей странице"""
-        response = self.client.get("/unexisting_page/")
+        response = self.client.get('/unexisting_page/')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
-        self.assertTemplateUsed(response, "core/404.html")
+        self.assertTemplateUsed(response, 'core/404.html')
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
