@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 
 from ..models import Group, Post
@@ -50,6 +51,7 @@ class PostURLTests(TestCase):
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
+                cache.clear()
                 response = self.client.get(address)
                 self.assertTemplateUsed(response, template)
 

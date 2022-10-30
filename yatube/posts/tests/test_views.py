@@ -5,6 +5,7 @@ from django import forms
 
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
 
@@ -79,6 +80,7 @@ class PostPagesTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         for template, reverse_name in self.templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
+                cache.clear()
                 response = self.authorized_client.get(template)
                 self.assertTemplateUsed(response, reverse_name)
 
@@ -112,6 +114,7 @@ class PostPagesTests(TestCase):
 
     def test_index_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
+        cache.clear()
         first_object = self.client.get(reverse("posts:index")).context[
             "page_obj"
         ][0]
@@ -169,6 +172,7 @@ class PostPagesTests(TestCase):
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):
+                cache.clear()
                 response = self.authorized_client.get(value)
                 form_field = response.context["page_obj"]
                 self.assertIn(expected, form_field)
@@ -245,6 +249,7 @@ class PostPaginatorTests(TestCase):
             PostPaginatorTests.PROFILE_URL
         ]:
             with self.subTest(url=url):
+                cache.clear()
                 response = PostPaginatorTests.author_client.get(url)
                 self.assertEqual(
                     len(response.context['page_obj']),

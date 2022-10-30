@@ -1,10 +1,8 @@
-from http import HTTPStatus
-
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..models import Group, Post, User
+from ..models import Post, Group, User
 
 
 class PostFormTests(TestCase):
@@ -13,10 +11,19 @@ class PostFormTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
+        self.group = Group.objects.create(
+            title='Тестовая группа',
+            slug='test-slug',
+            description='Тестовое описание',
+        )
+
     def test_create_post(self):
         """Валидная форма создала запись в Post."""
         posts_count = Post.objects.count()
-        form_data = {"text": "Тестовый текст"}
+        form_data = {
+            "text": "Тестовый текст",
+            'group': self.group.id,
+        }
         response = self.authorized_client.post(
             reverse("posts:post_create"), data=form_data, follow=True
         )
@@ -27,8 +34,13 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(Post.objects.filter(text=form_data['text']).exists())
 
+        new_post = Post.objects.last()
+        self.assertEqual(new_post.author, self.user)
+        self.assertEqual(new_post.group, self.group)
+
     def test_post_edit(self):
         """Валидная форма изменила запись в Post."""
+        text = 'измененный текст'
         self.post = Post.objects.create(
             author=self.user,
             text="Текст для теста",
@@ -56,7 +68,12 @@ class PostFormTests(TestCase):
             pk=self.post.pk,
         ).exists()
         )
-        self.assertEqual(response.status_code, HTTPStatus.OK)
+
+        self.assertFalse(Post.objects.filter(
+            text=text,
+            group=self.group.id,
+        ).exists()
+        )
 
     def test_new_post_with_image_created_in_db(self):
         """Проверка сохранения в БД нового поста с картинкой"""
@@ -71,7 +88,11 @@ class PostFormTests(TestCase):
         uploaded = SimpleUploadedFile(
             name="small.gif", content=small_gif, content_type="image/gif"
         )
-        form_data = {"text": "Test post with image", "image": uploaded}
+        form_data = {
+            "text": "Test post with image",
+            "image": uploaded,
+            "group": self.group.id
+        }
         posts_count = Post.objects.count()
         self.authorized_client.post(
             reverse("posts:post_create"), data=form_data
@@ -82,3 +103,7 @@ class PostFormTests(TestCase):
                 author=self.user, text=form_data["text"]
             ).exists()
         )
+
+        new_post = Post.objects.last()
+        self.assertEqual(new_post.author, self.user)
+        self.assertEqual(new_post.group, self.group)
